@@ -1,27 +1,30 @@
 
-class AVLNode
+template<typename T> class AVLNode
 {
 private:
-    int data;
+    T data;
     AVLNode * left;
     AVLNode * right;
 public:
-    AVLNode(int data, AVLNode*left, AVLNode*right);
+    AVLNode(T data, AVLNode*left, AVLNode*right);
     ~AVLNode();
-    int getData();
+    T getData();
     void setData(int newData);
 };
 
-AVLNode::AVLNode(int data, AVLNode*left, AVLNode*right){
+template<typename T> 
+AVLNode<T>::AVLNode(T data, AVLNode*left, AVLNode*right){
     this->data = data;
     this->left = left;
     this->right = right;
 }
 
-int AVLNode::getData(){
+template<typename T> 
+T AVLNode<T>::getData(){
     return this->data;
 }
 
-void AVLNode::setData(int data){
+template<typename T> 
+void AVLNode<T>::setData(int data){
     this->data = data;
 }
