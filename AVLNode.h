@@ -38,10 +38,10 @@ void AVLNode::setData(int data){
     this->data = data;
 }
 
-void setLeft(AVLNode * left){
+void AVLNode::setLeft(AVLNode * left){
     this->left = left;
 }
 
-void setRight(AVLNode * right){
+void AVLNode::setRight(AVLNode * right){
     this->right = right;
 }
