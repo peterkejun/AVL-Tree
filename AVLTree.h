@@ -23,4 +23,5 @@ public:
     void insert(int);
     void delete_(int);
     AVLNode * find(int) const;
+    void printTree(AVLNode *, int);
 };

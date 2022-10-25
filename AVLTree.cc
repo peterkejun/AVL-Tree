@@ -88,4 +88,15 @@ AVLNode * AVLTree::recursiveFind(AVLNode *node, int data) const {
 
 AVLNode * AVLTree::find(int data) const {
     return recursiveFind(root, data);
+void printTree(AVLNode * root, int space){
+    if (root == nullptr)
+        return;
+
+    space += 10;
+    printTree(root->getRight(), space);
+    cout << endl;
+    for (int i = 10; i < space; i++)
+        cout << " ";
+    cout << root->getData() << "\n";
+    printTree(root->getLeft(), space);
 }
