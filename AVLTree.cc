@@ -1,5 +1,4 @@
 #include "AVLTree.h"
-#include "AVLNode.h"
 #include <iostream>
 using namespace std;
 
@@ -91,7 +90,7 @@ AVLNode * AVLTree::find(int data) const {
     return recursiveFind(root, data);
 }
 
-void printTree(AVLNode * root, int space) {
+void AVLTree::printTree(AVLNode * root, int space) {
     if (root == nullptr)
         return;
 
@@ -102,4 +101,8 @@ void printTree(AVLNode * root, int space) {
         cout << " ";
     cout << root->getData() << "\n";
     printTree(root->getLeft(), space);
+}
+
+void AVLTree::delete_(int) {
+
 }

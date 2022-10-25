@@ -1,3 +1,5 @@
+#ifndef __AVL_NODE_H__
+#define __AVL_NODE_H__
 
 class AVLNode
 {
@@ -15,3 +17,4 @@ public:
     void setLeft(AVLNode * left);
     void setRight(AVLNode * right);
 };
+#endif
