@@ -11,6 +11,10 @@ private:
     AVLNode *rotateRL(AVLNode *);
     AVLNode *balance(AVLNode *);
 
+    int heightDifference(AVLNode *) const;
+
+    void recursiveDeallocate(AVLNode *);
+    int recursiveHeight(AVLNode *) const;
 public:
     AVLTree();
     ~AVLTree();
