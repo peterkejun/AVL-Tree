@@ -103,6 +103,45 @@ void AVLTree::printTree(AVLNode * root, int space) {
     printTree(root->getLeft(), space);
 }
 
+AVLNode *AVLTree::recursiveMinimum(AVLNode * node) const {
+    if (node == nullptr) {
+        return nullptr;
+    } else if (node->getLeft() == nullptr) {
+        return node;
+    } else {
+        return recursiveMinimum(node->getLeft());
+    }
+}
+
+AVLNode *AVLTree::recursiveDelete(AVLNode *node, int data) {
+    if (node == nullptr) {
+        return nullptr;
+    } else if (node->getData() < data) {
+        node->setRight(recursiveDelete(node->getRight(), data));
+    } else if (node->getData() > data) {
+        node->setLeft(recursiveDelete(node->getLeft(), data));
+    } else {
+        if (node->getLeft() != nullptr && node->getRight() != nullptr) {
+            AVLNode *temp = recursiveMinimum(node->getRight());
+            node->setData(temp->getData());
+            node->setRight(recursiveDelete(node->getRight(), node->getData()));
+        } else {
+            AVLNode * temp = node;
+            if (node->getLeft() == nullptr) {
+                node = node->getRight();
+            } else if (node->getRight() == nullptr) {
+                node = node->getLeft();
+            }
+            delete temp;
+        }
+    }
+
+    if (node != nullptr) {
+        return balance(node);
+    }
+    return nullptr;
+}
+
 void AVLTree::delete_(int) {
 
 }
