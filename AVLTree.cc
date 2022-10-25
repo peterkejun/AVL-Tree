@@ -46,6 +46,8 @@ AVLNode * AVLTree::balance(AVLNode * node) {
         }
     }
     return node;
+}
+
 AVLNode *rotateRR(AVLNode * parent){
     AVLNode *temp = parent->getRight();
     parent->setRight(temp->getLeft());
