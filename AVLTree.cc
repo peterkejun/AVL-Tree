@@ -52,7 +52,6 @@ AVLNode *rotateRR(AVLNode * parent){
     AVLNode *temp = parent->getRight();
     parent->setRight(temp->getLeft());
     temp->setLeft(parent);
-    cout<<"ROTATION: RightRight";
     return temp;
 }
 
@@ -60,20 +59,33 @@ AVLNode *rotateLL(AVLNode * parent){
     AVLNode *temp = parent->getLeft();
     parent->setLeft(temp->getRight());
     temp->setRight(parent);
-    cout<<"ROTATION: LeftLeft";
     return temp;
 }
 
 AVLNode *rotateLR(AVLNode * parent){
     AVLNode * temp = parent->getLeft();
     parent->setLeft(rotateRR(temp));
-    cout<<"ROTATION: LeftRight";
     return rotateLL(parent);
 }
 
 AVLNode *rotateRL(AVLNode * parent){
     AVLNode * temp = parent->getRight();
     parent->setRight(rotateRR(temp));
-    cout<<"Right-Left Rotation";
     return rotateRR(parent);
+}
+
+AVLNode * AVLTree::recursiveFind(AVLNode *node, int data) const {
+    if (node->getData() == data) {
+        return node;
+    }
+    AVLNode *leftFind = recursiveFind(node->getLeft(), data);
+    if (leftFind != nullptr) {
+        return leftFind;
+    }
+    AVLNode *rightFind = recursiveFind(node->getRight(), data);
+    return rightFind;
+}
+
+AVLNode * AVLTree::find(int data) const {
+    return recursiveFind(root, data);
 }

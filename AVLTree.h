@@ -15,11 +15,12 @@ private:
 
     void recursiveDeallocate(AVLNode *);
     int recursiveHeight(AVLNode *) const;
+    AVLNode *recursiveFind(AVLNode *, int) const;
 public:
     AVLTree();
     ~AVLTree();
 
     void insert(int);
     void delete_(int);
-    AVLNode * find(int);
+    AVLNode * find(int) const;
 };
