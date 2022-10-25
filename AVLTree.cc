@@ -1,4 +1,6 @@
 #include "AVLTree.h"
+#include <iostream>
+using namespace std;
 
 AVLTree::AVLTree() {
     root = nullptr;
@@ -44,4 +46,32 @@ AVLNode * AVLTree::balance(AVLNode * node) {
         }
     }
     return node;
+AVLNode *rotateRR(AVLNode * parent){
+    AVLNode *temp = parent->getRight();
+    parent->setRight(temp->getLeft());
+    temp->setLeft(parent);
+    cout<<"ROTATION: RightRight";
+    return temp;
+}
+
+AVLNode *rotateLL(AVLNode * parent){
+    AVLNode *temp = parent->getLeft();
+    parent->setLeft(temp->getRight());
+    temp->setRight(parent);
+    cout<<"ROTATION: LeftLeft";
+    return temp;
+}
+
+AVLNode *rotateLR(AVLNode * parent){
+    AVLNode * temp = parent->getLeft();
+    parent->setLeft(rotateRR(temp));
+    cout<<"ROTATION: LeftRight";
+    return rotateLL(parent);
+}
+
+AVLNode *rotateRL(AVLNode * parent){
+    AVLNode * temp = parent->getRight();
+    parent->setRight(rotateRR(temp));
+    cout<<"Right-Left Rotation";
+    return rotateRR(parent);
 }
