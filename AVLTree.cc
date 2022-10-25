@@ -48,27 +48,27 @@ AVLNode * AVLTree::balance(AVLNode * node) {
     return node;
 }
 
-AVLNode *rotateRR(AVLNode * parent){
+AVLNode *AVLTree::rotateRR(AVLNode * parent){
     AVLNode *temp = parent->getRight();
     parent->setRight(temp->getLeft());
     temp->setLeft(parent);
     return temp;
 }
 
-AVLNode *rotateLL(AVLNode * parent){
+AVLNode *AVLTree::rotateLL(AVLNode * parent){
     AVLNode *temp = parent->getLeft();
     parent->setLeft(temp->getRight());
     temp->setRight(parent);
     return temp;
 }
 
-AVLNode *rotateLR(AVLNode * parent){
+AVLNode *AVLTree::rotateLR(AVLNode * parent){
     AVLNode * temp = parent->getLeft();
     parent->setLeft(rotateRR(temp));
     return rotateLL(parent);
 }
 
-AVLNode *rotateRL(AVLNode * parent){
+AVLNode *AVLTree::rotateRL(AVLNode * parent){
     AVLNode * temp = parent->getRight();
     parent->setRight(rotateRR(temp));
     return rotateRR(parent);
@@ -90,7 +90,7 @@ AVLNode * AVLTree::find(int data) const {
     return recursiveFind(root, data);
 }
 
-void AVLTree::printTree(AVLNode * root, int space) {
+void AVLTree::printTree(int space) {
     if (root == nullptr)
         return;
 
@@ -144,4 +144,21 @@ AVLNode *AVLTree::recursiveDelete(AVLNode *node, int data) {
 
 void AVLTree::delete_(int) {
 
+}
+
+AVLNode * AVLTree::recursiveInsert(AVLNode* node, int data){
+    if (node == nullptr) {
+      node = new AVLNode(data, nullptr, nullptr);
+   } else if (data < node->getData()) {
+      node->setLeft(recursiveInsert(node->getLeft(), data));
+      node = balance(node);
+   } else if (data >= node->getData()) {
+      node->setRight(recursiveInsert(node->getRight(), data));
+      node = balance(node);
+   } 
+   return node;
+}
+
+void AVLTree::insert(AVLNode* node, int data){
+    recursiveInsert(node, data);
 }
