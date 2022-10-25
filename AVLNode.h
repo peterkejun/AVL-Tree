@@ -15,33 +15,3 @@ public:
     void setLeft(AVLNode * left);
     void setRight(AVLNode * right);
 };
-
-AVLNode::AVLNode(int data, AVLNode*left, AVLNode*right){
-    this->data = data;
-    this->left = left;
-    this->right = right;
-}
-
-int AVLNode::getData() const{
-    return this->data;
-}
-
-AVLNode* AVLNode::getLeft() const{
-    return this->left;
-}
-
-AVLNode* AVLNode::getRight() const{
-    return this->right;
-}
-
-void AVLNode::setData(int data){
-    this->data = data;
-}
-
-void AVLNode::setLeft(AVLNode * left){
-    this->left = left;
-}
-
-void AVLNode::setRight(AVLNode * right){
-    this->right = right;
-}
