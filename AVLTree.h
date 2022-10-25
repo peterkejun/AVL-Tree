@@ -14,6 +14,7 @@ private:
     int heightDifference(AVLNode *) const;
 
     void recursiveDeallocate(AVLNode *);
+    AVLNode * recursiveInsert(AVLNode *, int);
     int recursiveHeight(AVLNode *) const;
     AVLNode *recursiveFind(AVLNode *, int) const;
     AVLNode *recursiveDelete(AVLNode *, int);
@@ -22,8 +23,8 @@ public:
     AVLTree();
     ~AVLTree();
 
-    void insert(int);
+    void insert(AVLNode*, int);
     void delete_(int);
     AVLNode * find(int) const;
-    void printTree(AVLNode *, int);
+    void printTree(int);
 };
