@@ -2,6 +2,9 @@
 #include <iostream>
 using namespace std;
 
+#ifndef __AVL_TREE_H__
+#define __AVL_TREE_H__
+
 template<class T>
 class AVLTree {
     
@@ -264,3 +267,5 @@ AVLTree<T> *AVLTree<T>::clone() const {
     }
     return new AVLTree<T>(recursiveClone(root));
 }
+
+#endif
