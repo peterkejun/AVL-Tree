@@ -27,6 +27,7 @@ private:
     AVLNode<T> *recursiveFind(AVLNode<T> *, T) const;
     AVLNode<T> *recursiveDelete(AVLNode<T> *, T);
     AVLNode<T> *recursiveMinimum(AVLNode<T> *) const;
+    AVLNode<T> *recursiveMaximum(AVLNode<T> *) const;
     void recursivePrint(AVLNode<T> *, int) const;
     AVLNode<T> *recursiveClone(AVLNode<T> *) const;
     AVLNode<T> *recursiveParent(AVLNode<T> *, T) const;
@@ -45,6 +46,10 @@ public:
     AVLTree<T> *split(T);   
     vector<AVLNode<T> *> toVector() const;
     void join(AVLTree<T> *);
+    AVLNode<T> *max() const;
+    AVLNode<T> *min() const;
+    AVLNode<T> *popMax();
+    AVLNode<T> *popMin();
 };
 
 template<class T>
@@ -184,6 +189,17 @@ AVLNode<T> *AVLTree<T>::recursiveMinimum(AVLNode<T> * node) const {
         return node;
     } else {
         return recursiveMinimum(node->getLeft());
+    }
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::recursiveMaximum(AVLNode<T> * node) const {
+    if (node == nullptr) {
+        return nullptr;
+    } else if (node->getRight() == nullptr) {
+        return node;
+    } else {
+        return recursiveMaximum(node->getRight());
     }
 }
 
@@ -338,6 +354,36 @@ void AVLTree<T>::join(AVLTree<T> *other) {
         AVLNode<T> *next = iterator.next();
         insert(next->getData());
     }
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::max() const {
+    return recursiveMaximum(root);
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::min() const {
+    return recursiveMinimum(root);
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::popMax() {
+    AVLNode<T> *node = max();
+    if (node == nullptr) {
+        return nullptr;
+    }
+    delete_(node->getData());
+    return node;
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::popMin() {
+    AVLNode<T> *node = min();
+    if (node == nullptr) {
+        return nullptr;
+    }
+    delete_(node->getData());
+    return node;
 }
 
 #endif
