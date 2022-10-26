@@ -1,22 +1,78 @@
+#include <iostream>
+using namespace std;
+
 #ifndef __AVL_NODE_H__
 #define __AVL_NODE_H__
 
+template<class T>
 class AVLNode
 {
 private:
-    int data;
+    T data;
     AVLNode * left;
     AVLNode * right;
 public:
     enum Comparison { LESS, GREATER, EQUAL };
-    AVLNode(int data, AVLNode*left, AVLNode*right);
+    AVLNode(T data, AVLNode*left, AVLNode*right);
     ~AVLNode();
-    int getData() const;
+    T getData() const;
     AVLNode* getLeft() const;
     AVLNode* getRight() const;
-    void setData(int newData);
+    void setData(T newData);
     void setLeft(AVLNode * left);
     void setRight(AVLNode * right);
-    Comparison compare(int) const;
+    Comparison compare(T) const;
 };
+
+template<class T>
+AVLNode<T>::AVLNode(T data, AVLNode*left, AVLNode*right){
+    this->data = data;
+    this->left = left;
+    this->right = right;
+}
+
+template<class T>
+AVLNode<T>::~AVLNode() {}
+
+template<class T>
+T AVLNode<T>::getData() const{
+    return this->data;
+}
+
+template<class T>
+AVLNode<T>* AVLNode<T>::getLeft() const{
+    return this->left;
+}
+
+template<class T>
+AVLNode<T>* AVLNode<T>::getRight() const{
+    return this->right;
+}
+
+template<class T>
+void AVLNode<T>::setData(T data){
+    this->data = data;
+}
+
+template<class T>
+void AVLNode<T>::setLeft(AVLNode * left){
+    this->left = left;
+}
+
+template<class T>
+void AVLNode<T>::setRight(AVLNode * right){
+    this->right = right;
+}
+
+template<class T>
+typename AVLNode<T>::Comparison AVLNode<T>::compare(T data) const {
+    if (this->data < data) {
+        return LESS;
+    } else if (this->data > data) {
+        return GREATER;
+    } else {
+        return EQUAL;
+    }
+}
+
 #endif
