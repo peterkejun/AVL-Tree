@@ -32,3 +32,13 @@ void AVLNode::setLeft(AVLNode * left){
 void AVLNode::setRight(AVLNode * right){
     this->right = right;
 }
+
+AVLNode::Comparison AVLNode::compare(int data) const {
+    if (this->data < data) {
+        return LESS;
+    } else if (this->data > data) {
+        return GREATER;
+    } else {
+        return EQUAL;
+    }
+}
