@@ -1,10 +1,13 @@
 #include <stack>
-#include "AVLTree.h"
+#include "AVLNode.h"
 
 using namespace std;
 
 #ifndef __AVL_TREE_ITERATOR__
 #define __AVL_TREE_ITERATOR__
+
+template<class T>
+class AVLTree;
 
 template<class T>
 class AVLTreeIterator {

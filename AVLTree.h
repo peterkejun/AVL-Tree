@@ -1,4 +1,6 @@
 #include "AVLNode.h"
+#include "AVLTreeIterator.h"
+#include <vector>
 #include <iostream>
 using namespace std;
 
@@ -27,6 +29,7 @@ private:
     AVLNode<T> *recursiveMinimum(AVLNode<T> *) const;
     void recursivePrint(AVLNode<T> *, int) const;
     AVLNode<T> *recursiveClone(AVLNode<T> *) const;
+    AVLNode<T> *recursiveParent(AVLNode<T> *, T) const;
 public:
     AVLTree();
     AVLTree(AVLNode<T> *root);
@@ -39,6 +42,9 @@ public:
 
     // operations
     AVLTree<T> *clone() const;
+    AVLTree<T> *split(T);   
+    vector<AVLNode<T> *> toVector() const;
+
 };
 
 template<class T>
@@ -266,6 +272,63 @@ AVLTree<T> *AVLTree<T>::clone() const {
         return nullptr;
     }
     return new AVLTree<T>(recursiveClone(root));
+}
+
+template<class T>
+AVLTree<T> *AVLTree<T>::split(T data) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+    if (root->getData() == data) {
+        return nullptr;
+    }
+    AVLNode<T> *parent = recursiveParent(root, data);
+    if (parent == nullptr) {
+        throw 1;
+    }
+    if (parent->getLeft() != nullptr && parent->getLeft()->getData() == data) {
+        AVLTree<T> *tree = new AVLTree<T>(parent->getLeft());
+        parent->setLeft(nullptr);
+        return tree;
+    } 
+    if (parent->getRight() != nullptr && parent->getRight()->getData() == data) {
+        AVLTree<T> *tree = new AVLTree<T>(parent->getRight());
+        parent->setRight(nullptr);
+        return tree;
+    }
+}
+
+template<class T>
+AVLNode<T> *AVLTree<T>::recursiveParent(AVLNode<T> *node, T data) const {
+    if (node->getLeft() != nullptr && node->getLeft()->getData() == data) {
+        return node;
+    }
+    if (node->getRight() != nullptr && node->getRight()->getData() == data) {
+        return node;
+    }
+    if (node->getLeft() != nullptr) {
+        AVLNode<T> *left = recursiveParent(node->getLeft(), data);
+        if (left != nullptr) {
+            return left;
+        }
+    }
+    if (node->getRight() != nullptr) {
+        AVLNode<T> *right = recursiveParent(node->getRight(), data);
+        if (right != nullptr) {
+            return right;
+        }
+    }
+    return nullptr;
+}
+
+template<class T>
+vector<AVLNode<T> *> AVLTree<T>::toVector() const {
+    AVLTreeIterator<T> iterator(this);
+    vector<AVLNode<T> *> v;
+    while (iterator.hasNext()) {
+        v.push_back(iterator.next());
+    }
+    return v;
 }
 
 #endif
