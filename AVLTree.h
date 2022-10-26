@@ -50,6 +50,7 @@ public:
     AVLNode<T> *min() const;
     AVLNode<T> *popMax();
     AVLNode<T> *popMin();
+    unsigned int count(T) const;
 };
 
 template<class T>
@@ -385,5 +386,19 @@ AVLNode<T> *AVLTree<T>::popMin() {
     delete_(node->getData());
     return node;
 }
+
+template<class T>
+unsigned int AVLTree<T>::count(T data) const {
+    AVLTreeIterator<T> iterator(this);
+    unsigned int counter = 0;
+    while (iterator.hasNext()) {
+        AVLNode<T> *node = iterator->next();
+        if (node->getData() == data) {
+            counter++;
+        }
+    }
+    return counter;
+}
+
 
 #endif
