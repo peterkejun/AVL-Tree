@@ -71,4 +71,14 @@ int main() {
   std::cout << tree.size() << " (expected 4)" << std::endl;
   avl::avl_tree<int> tree2 = tree;
   std::cout << tree2.size() << " (expected 4)" << std::endl;
+  std::cout << tree2.get_item(0) << " (expected 44)" << std::endl;
+  std::cout << tree2.get_item(1) << " (expected 33)" << std::endl;
+  std::cout << tree2.get_item(2) << " (expected 22)" << std::endl;
+  std::cout << tree2.get_item(3) << " (expected 11)" << std::endl;
+  tree2.insert(4, 55);
+  tree2.insert(5, 66);
+  std::cout << tree.size() << " (expected 4)" << std::endl;
+  std::cout << tree2.size() << " (expected 6)" << std::endl;
+  std::cout << tree2.get_item(4) << " (expected 55)" << std::endl;
+  std::cout << tree2.get_item(5) << " (expected 66)" << std::endl;
 }

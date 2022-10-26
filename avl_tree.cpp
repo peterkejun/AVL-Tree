@@ -607,7 +607,7 @@ avl_node_get_at_index(
     return avl_node_get_at_index(node->left, index);
   } else {
     // on the right
-    return avl_node_get_at_index(node->left, index - (left_size + _Size(1)));
+    return avl_node_get_at_index(node->right, index - (left_size + _Size(1)));
   }
 }
 
