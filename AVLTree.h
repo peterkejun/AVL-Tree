@@ -12,6 +12,7 @@ class AVLTree {
     
 private:
     AVLNode<T> * root;
+    unsigned int size;
 
     AVLNode<T> *rotateRR(AVLNode<T> *);
     AVLNode<T> *rotateLL(AVLNode<T> *);
@@ -38,6 +39,11 @@ public:
         virtual bool evaluate(AVLNode<T> *) const;
     };
 
+    class MappingFunction {
+    public:
+        virtual void apply(AVLNode<T> *) const;
+    };
+
     AVLTree();
     AVLTree(AVLNode<T> *root);
     ~AVLTree();
@@ -58,16 +64,23 @@ public:
     AVLNode<T> *popMin();
     unsigned int count(T) const;
     vector<AVLNode<T> *> filter(Predicate *) const;
+    unsigned int size() const;
+    const AVLNode<T> *getRoot() const;
+    void map(MappingFunction *);
 };
 
 template<class T>
-AVLTree<T>::AVLTree() {
-    root = nullptr;
-}
+AVLTree<T>::AVLTree(): root(nullptr), size(0) {}
 
 template<class T>
-AVLTree<T>::AVLTree(AVLNode<T> *root) {
-    this->root = root;
+AVLTree<T>::AVLTree(AVLNode<T> *root): root(root) {
+    AVLTreeIterator<T> iterator(this);
+    unsigned int counter = 0;
+    while (iterator.hasNext()) {
+        counter++;
+        iterator.next();
+    }
+    size = counter;
 }
 
 template<class T>
@@ -244,6 +257,7 @@ AVLNode<T> *AVLTree<T>::recursiveDelete(AVLNode<T> *node, T data) {
 template<class T>
 void AVLTree<T>::delete_(T data) {
     root = recursiveDelete(root, data);
+    size--;
 }
 
 template<class T>
@@ -277,6 +291,7 @@ AVLNode<T>* AVLTree<T>::recursiveInsert(AVLNode<T>* node, T data){
 template<class T>
 void AVLTree<T>::insert(T data){
     root = recursiveInsert(root, data);
+    size++;
 }
 
 template<class T>
@@ -313,11 +328,13 @@ AVLTree<T> *AVLTree<T>::split(T data) {
     if (parent->getLeft() != nullptr && parent->getLeft()->getData() == data) {
         AVLTree<T> *tree = new AVLTree<T>(parent->getLeft());
         parent->setLeft(nullptr);
+        size -= tree->size();
         return tree;
     } 
     if (parent->getRight() != nullptr && parent->getRight()->getData() == data) {
         AVLTree<T> *tree = new AVLTree<T>(parent->getRight());
         parent->setRight(nullptr);
+        size -= tree->size();
         return tree;
     }
 }
@@ -362,6 +379,7 @@ void AVLTree<T>::join(AVLTree<T> *other) {
         AVLNode<T> *next = iterator.next();
         insert(next->getData());
     }
+    size += other->size();
 }
 
 template<class T>
@@ -412,11 +430,31 @@ vector<AVLNode<T> *> AVLTree<T>::filter(Predicate *predicate) const {
     AVLTreeIterator<T> iterator(this);
     vector<AVLNode<T> *> v;
     while (iterator.hasNext()) {
-        if (predicate->evaluate(iterator.next())) {
-            v.push_back(iterator.next());
+        AVLNode<T> *next = iterator.next();
+        if (predicate->evaluate(next)) {
+            v.push_back(next);
         }
     }
     return v;
+}
+
+template<class T>
+const AVLNode<T> *AVLTree<T>::getRoot() const {
+    return root;
+}
+
+template<class T>
+unsigned int AVLTree<T>::size() const {
+    return size;
+}
+
+template<class T>
+void AVLTree<T>::map(MappingFunction *function) {
+    AVLTreeIterator<T> iterator(this);
+    while (iterator.hasNext()) {
+        AVLNode<T> *next = iterator.next();
+        function->apply(next);
+    }
 }
 
 #endif
