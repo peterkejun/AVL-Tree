@@ -12,14 +12,14 @@
 #include <type_traits>
 
 #if __cplusplus >= 201703L
-// invoke_result: as of C++17
-#define avl_invoke_result(T, ...) std::invoke_result<T, __VA_ARGS__>
+// invoke_result_t: as of C++17
+#define avl_invoke_result_t(T, ...) std::invoke_result_t<T, __VA_ARGS__>
 // optional: as of C++17
 #include <optional>
 #define avl_optional std::optional
 #else
-// result_of: before C++17
-#define avl_invoke_result(T, ...) std::result_of<T(__VA_ARGS__)>
+// result_of_t: before C++17
+#define avl_invoke_result_t(T, ...) std::result_of_t<T(__VA_ARGS__)>
 // optional: as of C++17
 #include <experimental/optional>
 #define avl_optional std::experimental::optional
@@ -326,6 +326,14 @@ class avl_node {
     balance = char(0);
     subrange = i_subrange;
   }
+  avl_node(const avl_node& other) {
+    left = other.left;
+    value = other.value;
+    right = other.right;
+    size = other.size;
+    balance = other.balance;
+    subrange = other.subrange;
+  }
 
   // these helper functions are friends
 
@@ -383,6 +391,18 @@ class avl_node {
 
   // avl_node_replace_at_index does not need friend
   // avl_node_replace_ordered does not need friend
+
+  template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2,
+            typename _Alloc_2>
+  friend avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *
+  avl_node_clone_subtree(
+      avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, _Alloc_2&);
+
+  template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2,
+            typename _Alloc_2>
+  friend void
+  avl_node_delete_subtree(
+      avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *node, _Alloc_2& _alloc);
 
   // these are our methods
 
@@ -1079,6 +1099,83 @@ avl_node_replace_ordered(
     return std::make_tuple(node, did_merge, index_result);
 }
 
+template <typename _Element, typename _Size, typename _Range_Type_Intermediate,
+          typename _Alloc>
+avl_node<_Element, _Size, _Range_Type_Intermediate> *
+avl_node_clone_subtree(
+    avl_node<_Element, _Size, _Range_Type_Intermediate> *node, _Alloc& _alloc) {
+  if(node == nullptr) {
+    return nullptr;
+  }
+  avl_node<_Element, _Size, _Range_Type_Intermediate> * new_node = _alloc.allocate(1);
+  _alloc.construct(new_node, *node);
+  new_node->left = avl_node_clone_subtree(node->left, _alloc);
+  new_node->right = avl_node_clone_subtree(node->right, _alloc);
+  return new_node;
+}
+
+template <typename _Element, typename _Size, typename _Range_Type_Intermediate,
+          typename _Alloc>
+void
+avl_node_delete_subtree(
+    avl_node<_Element, _Size, _Range_Type_Intermediate> *node, _Alloc& _alloc) {
+  // empty node -> do nothing, report nothing to delete
+  if (node == nullptr) {
+    return;
+  }
+  // destroy children
+  avl_node_delete_subtree(node->left, _alloc);
+  avl_node_delete_subtree(node->right, _alloc);
+  // destroy self
+  _alloc.destroy(node);
+  _alloc.deallocate(node, 1);
+}
+
+template <typename _Element,
+          typename _Size,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine>
+          _Range_Type_Intermediate
+avl_node_range_get(
+    avl_node<_Element, _Size, _Range_Type_Intermediate> *node, _Size start, _Size stop,
+  const _Range_Preprocess& _rpre, const _Range_Combine& _rcomb) {
+  avl_optional<_Size> index;
+  // empty node or empty range -> return default value
+  if (node == nullptr || start >= stop) {
+    return _Range_Type_Intermediate();
+  }
+  if(start <= 0 && stop >= node->size) {
+    // entire subtree contained
+    return node->subrange;
+  }
+  const bool has_left = node->left != nullptr;
+  const _Size left_size = avl_node_size(node->left);
+  if(has_left && start < left_size) {
+    // need to include left
+    _Range_Type_Intermediate result = avl_node_range_get(node->left, start, stop, _rpre, _rcomb);
+    if(stop > left_size) {
+      result = _rcomb(result, _rpre(node->value));
+    }
+    if(stop > left_size + 1) {
+      result = _rcomb(result,
+        avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb));
+    }
+    return result;
+  } else if(start == left_size) {
+    // no left, but include self
+    _Range_Type_Intermediate result = _rpre(node->value);
+    if(stop > left_size + 1) {
+      result = _rcomb(result,
+        avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb));
+    }
+    return result;
+  } else {
+    // only need to consider right
+    return avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb);
+  }
+}
+
 // the avl tree class
 
 //! The AVL tree class, the most basic and extensible data structure in the public API.
@@ -1137,7 +1234,7 @@ template <typename _Element, typename _Element_Compare = std::less<_Element>,
           typename _Size = std::size_t, typename _Merge = no_merge<_Element>,
           typename _Range_Preprocess = monostate,
           typename _Range_Type_Intermediate =
-              avl_invoke_result(_Range_Preprocess, _Element),
+              avl_invoke_result_t(_Range_Preprocess, _Element),
           typename _Range_Combine = std::plus<_Range_Type_Intermediate>,
           typename _Range_Postprocess = identity<_Range_Type_Intermediate>,
           typename _Alloc = std::allocator<
@@ -1154,19 +1251,160 @@ class avl_tree {
 
  public:
   avl_tree();
+  avl_tree(const avl_tree<_Element, _Element_Compare, _Size, _Merge,
+    _Range_Preprocess, _Range_Type_Intermediate,
+    _Range_Combine, _Range_Postprocess, _Alloc>&);
   ~avl_tree();
   std::size_t size();
   _Element get_item(std::size_t);
-  std::result_of<_Range_Postprocess(_Range_Type_Intermediate)> get_range(
+  avl_invoke_result_t(_Range_Postprocess, _Range_Type_Intermediate) get_range(
       std::size_t, std::size_t);
   void insert(std::size_t, _Element);
   _Element remove(std::size_t);
-  _Element replace(std::size_t, _Element);
+  void replace(std::size_t, _Element);
 };
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::avl_tree() {
+    root = nullptr;
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::avl_tree(const avl_tree<_Element, _Element_Compare, _Size, _Merge,
+    _Range_Preprocess, _Range_Type_Intermediate,
+    _Range_Combine, _Range_Postprocess, _Alloc>& other) {
+    root = avl_node_clone_subtree(other.root, _alloc);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::~avl_tree() {
+    avl_node_delete_subtree(root, _alloc);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+std::size_t
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::size() {
+    return avl_node_size(root);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+_Element
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::get_item(std::size_t index) {
+    return avl_node_get_at_index(root, index);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+avl_invoke_result_t(_Range_Postprocess, _Range_Type_Intermediate)
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::get_range(std::size_t start, std::size_t stop) {
+    return _rpost(avl_node_range_get(root, start, stop, _rpre, _rcomb));
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+void
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::insert(std::size_t index, _Element element) {
+    auto insert_result = avl_node_insert_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
+    root = std::get<0>(insert_result);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+_Element
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::remove(std::size_t index) {
+    auto remove_result = avl_node_remove_at_index(root, index, _rpre, _rcomb, _alloc);
+    root = std::get<0>(remove_result);
+    return std::get<2>(remove_result);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+void
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::replace(std::size_t index, _Element element) {
+    auto replace_result = avl_node_replace_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
+    root = std::get<0>(replace_result);
+  }
 
 }  // namespace avl
 
-#undef avl_invoke_result
+#undef avl_invoke_result_t
 #undef avl_optional
 
 #endif
