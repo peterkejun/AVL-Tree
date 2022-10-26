@@ -59,6 +59,7 @@ int main() {
       node, 1, avl::identity<int>(), std::plus<int>(),
       std::allocator<avl::avl_node<int, int, int>>()));
   std::cout << avl::avl_node_size(node) << " (expected 2)" << std::endl;
+  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
   // test some removal ordered
   // (100)
   node = std::get<0>(avl::avl_node_remove_ordered(
@@ -90,6 +91,33 @@ int main() {
       ));
   std::cout << avl::avl_node_get_at_index(node, 0) << " (expected 350)" << std::endl;
   std::cout << avl::avl_node_size(node) << " (expected 1)" << std::endl;
+  std::cout << avl::avl_node_depth(node) << " (expected 1)" << std::endl;
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 450, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 550, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 650, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  std::cout << avl::avl_node_depth(node) << " (expected 3)" << std::endl;
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 660, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 670, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 680, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  std::cout << avl::avl_node_depth(node) << " (expected 3)" << std::endl;
+  node = std::get<0>(avl::avl_node_insert_ordered(
+      node, 690, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
+      std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
+  std::cout << avl::avl_node_depth(node) << " (expected 4)" << std::endl;
   // test making a tree
   avl::avl_tree<int> tree;
   std::cout << tree.size() << " (expected 0)" << std::endl;

@@ -187,6 +187,9 @@ class avl_node;
 template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
 _Size avl_node_size(avl_node<_Element, _Size, _Range_Type_Intermediate> *node);
 
+template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
+_Size avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node);
+
 template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2>
 const _Element_2&
 avl_node_get_at_index(
@@ -342,6 +345,11 @@ class avl_node {
   friend _Size_2 avl::avl_node_size(
       avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *);
 
+  template <typename _Element_2, typename _Size_2,
+            typename _Range_Type_Intermediate_2>
+  friend _Size_2 avl::avl_node_depth(
+      avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *);
+
   template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2>
   friend const _Element_2&
   avl::avl_node_get_at_index(
@@ -450,6 +458,14 @@ template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
 _Size avl_node_size(avl_node<_Element, _Size, _Range_Type_Intermediate> *node) {
   if (node == nullptr) return 0;
   return node->size;
+}
+
+// uses the convention that empty tree is 0 and single node is 1
+// O(logN) time
+template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
+_Size avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node) {
+ if (node == nullptr) return 0;
+ return 1 + (node->balance <= 0 ? avl_node_depth(node->left) : avl_node_depth(node->right));
 }
 
 //! Update size and range intermediate values at this node.
@@ -1162,6 +1178,7 @@ avl_node_range_get(
   const bool has_left = node->left != nullptr;
   const _Size left_size = avl_node_size(node->left);
   const _Size left_size_p1 = left_size + _Size(1);
+  // underflow safety
   const _Size start_offset = start <= left_size_p1 ? 0 : start - left_size_p1;
   const _Size stop_offset = stop <= left_size_p1 ? 0 : stop - left_size_p1;
   if(has_left && start < left_size) {
