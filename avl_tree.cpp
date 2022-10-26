@@ -404,6 +404,16 @@ class avl_node {
   avl_node_delete_subtree(
       avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *node, _Alloc_2& _alloc);
 
+  template <typename _Element_2,
+            typename _Size_2,
+            typename _Range_Preprocess_2,
+            typename _Range_Type_Intermediate_2,
+            typename _Range_Combine_2>
+  friend _Range_Type_Intermediate_2
+  avl_node_range_get(
+      avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *node, _Size_2 start, _Size_2 stop,
+    const _Range_Preprocess_2& _rpre, const _Range_Combine_2& _rcomb);
+
   // these are our methods
 
   template <typename _Range_Preprocess, typename _Range_Combine>
@@ -1141,8 +1151,8 @@ avl_node_range_get(
     avl_node<_Element, _Size, _Range_Type_Intermediate> *node, _Size start, _Size stop,
   const _Range_Preprocess& _rpre, const _Range_Combine& _rcomb) {
   avl_optional<_Size> index;
-  // empty node or empty range -> return default value
-  if (node == nullptr || start >= stop) {
+  // empty node or empty range or out of bounds -> return default value
+  if (node == nullptr || start >= stop || stop <= 0 || start >= node->size) {
     return _Range_Type_Intermediate();
   }
   if(start <= 0 && stop >= node->size) {
@@ -1151,28 +1161,31 @@ avl_node_range_get(
   }
   const bool has_left = node->left != nullptr;
   const _Size left_size = avl_node_size(node->left);
+  const _Size left_size_p1 = left_size + _Size(1);
+  const _Size start_offset = start <= left_size_p1 ? 0 : start - left_size_p1;
+  const _Size stop_offset = stop <= left_size_p1 ? 0 : stop - left_size_p1;
   if(has_left && start < left_size) {
     // need to include left
     _Range_Type_Intermediate result = avl_node_range_get(node->left, start, stop, _rpre, _rcomb);
     if(stop > left_size) {
       result = _rcomb(result, _rpre(node->value));
     }
-    if(stop > left_size + 1) {
+    if(stop > left_size_p1 && node->right != nullptr) {
       result = _rcomb(result,
-        avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb));
+        avl_node_range_get(node->right, start_offset, stop_offset, _rpre, _rcomb));
     }
     return result;
-  } else if(start == left_size) {
+  } else if(start <= left_size) {
     // no left, but include self
     _Range_Type_Intermediate result = _rpre(node->value);
-    if(stop > left_size + 1) {
+    if(stop > left_size_p1 && node->right != nullptr) {
       result = _rcomb(result,
-        avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb));
+        avl_node_range_get(node->right, start_offset, stop_offset, _rpre, _rcomb));
     }
     return result;
   } else {
     // only need to consider right
-    return avl_node_range_get(node->right, start - left_size - 1, stop - left_size - 1, _rpre, _rcomb);
+    return avl_node_range_get(node->right, start_offset, stop_offset, _rpre, _rcomb);
   }
 }
 
