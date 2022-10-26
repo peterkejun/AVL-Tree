@@ -122,6 +122,9 @@ AVLNode<T> *AVLTree<T>::rotateRL(AVLNode<T> * parent){
 
 template<class T>
 AVLNode<T> * AVLTree<T>::recursiveFind(AVLNode<T> *node, T data) const {
+    if (node == nullptr) {
+        return nullptr;
+    }
     if (node->compare(data) == AVLNode<T>::EQUAL) {
         return node;
     }
