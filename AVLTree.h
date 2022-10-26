@@ -32,6 +32,12 @@ private:
     AVLNode<T> *recursiveClone(AVLNode<T> *) const;
     AVLNode<T> *recursiveParent(AVLNode<T> *, T) const;
 public:
+
+    class Predicate {
+    public:
+        virtual bool evaluate(AVLNode<T> *) const;
+    };
+
     AVLTree();
     AVLTree(AVLNode<T> *root);
     ~AVLTree();
@@ -51,6 +57,7 @@ public:
     AVLNode<T> *popMax();
     AVLNode<T> *popMin();
     unsigned int count(T) const;
+    vector<AVLNode<T> *> filter(Predicate *) const;
 };
 
 template<class T>
@@ -395,7 +402,7 @@ unsigned int AVLTree<T>::count(T data) const {
     AVLTreeIterator<T> iterator(this);
     unsigned int counter = 0;
     while (iterator.hasNext()) {
-        AVLNode<T> *node = iterator->next();
+        AVLNode<T> *node = iterator.next();
         if (node->getData() == data) {
             counter++;
         }
@@ -403,5 +410,16 @@ unsigned int AVLTree<T>::count(T data) const {
     return counter;
 }
 
+template<class T>
+vector<AVLNode<T> *> AVLTree<T>::filter(Predicate *predicate) const {
+    AVLTreeIterator<T> iterator(this);
+    vector<AVLNode<T> *> v;
+    while (iterator.hasNext()) {
+        if (predicate->evaluate(iterator.next())) {
+            v.push_back(iterator.next());
+        }
+    }
+    return v;
+}
 
 #endif
