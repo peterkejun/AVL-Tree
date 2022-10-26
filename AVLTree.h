@@ -44,7 +44,7 @@ public:
     AVLTree<T> *clone() const;
     AVLTree<T> *split(T);   
     vector<AVLNode<T> *> toVector() const;
-
+    void join(AVLTree<T> *);
 };
 
 template<class T>
@@ -332,6 +332,15 @@ vector<AVLNode<T> *> AVLTree<T>::toVector() const {
         v.push_back(iterator.next());
     }
     return v;
+}
+
+template<class T>
+void AVLTree<T>::join(AVLTree<T> *other) {
+    AVLTreeIterator<T> iterator(other);
+    while (iterator.hasNext()) {
+        AVLNode<T> *next = iterator.next();
+        insert(next->getData());
+    }
 }
 
 #endif
