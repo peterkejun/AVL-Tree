@@ -23,19 +23,29 @@ private:
     AVLNode<T> *recursiveDelete(AVLNode<T> *, T);
     AVLNode<T> *recursiveMinimum(AVLNode<T> *) const;
     void recursivePrint(AVLNode<T> *, int) const;
+    AVLNode<T> *recursiveClone(AVLNode<T> *) const;
 public:
     AVLTree();
+    AVLTree(AVLNode<T> *root);
     ~AVLTree();
 
     void insert(T);
     void delete_(T);
     AVLNode<T> * find(T) const;
     void print() const;
+
+    // operations
+    AVLTree<T> *clone() const;
 };
 
 template<class T>
 AVLTree<T>::AVLTree() {
     root = nullptr;
+}
+
+template<class T>
+AVLTree<T>::AVLTree(AVLNode<T> *root) {
+    this->root = root;
 }
 
 template<class T>
@@ -239,3 +249,21 @@ void AVLTree<T>::insert(T data){
     root = recursiveInsert(root, data);
 }
 
+template<class T>
+AVLNode<T> *AVLTree<T>::recursiveClone(AVLNode<T> *node) const {
+    if (node == nullptr) {
+        return nullptr;
+    }
+    AVLNode<T> *copy = node->clone();
+    copy->setLeft(recursiveClone(copy->getLeft()));
+    copy->setRight(recursiveClone(copy->getRight()));
+    return copy;
+}
+
+template<class T>
+AVLTree<T> *AVLTree<T>::clone() const {
+    if (root == nullptr) {
+        return nullptr;
+    }
+    return new AVLTree<T>(recursiveClone(root));
+}

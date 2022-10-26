@@ -22,6 +22,7 @@ public:
     void setLeft(AVLNode * left);
     void setRight(AVLNode * right);
     Comparison compare(T) const;
+    AVLNode<T> *clone() const;
 };
 
 template<class T>
@@ -73,6 +74,11 @@ typename AVLNode<T>::Comparison AVLNode<T>::compare(T data) const {
     } else {
         return EQUAL;
     }
+}
+
+template<class T>
+AVLNode<T> *AVLNode<T>::clone() const {
+    return new AVLNode<T>(data, nullptr, nullptr);
 }
 
 #endif
