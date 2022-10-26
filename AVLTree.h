@@ -39,9 +39,14 @@ public:
         virtual bool evaluate(AVLNode<T> *) const;
     };
 
-    class MappingFunction {
+    class MapFunction {
     public:
         virtual void apply(AVLNode<T> *) const;
+    };
+
+    class ReduceFunction {
+    public: 
+        virtual int reduce(AVLNode<T> *, int) const
     };
 
     AVLTree();
@@ -66,7 +71,8 @@ public:
     vector<AVLNode<T> *> filter(Predicate *) const;
     unsigned int size() const;
     const AVLNode<T> *getRoot() const;
-    void map(MappingFunction *);
+    void map(MapFunction *);
+    int reduce(ReduceFunction *, int) const;
 };
 
 template<class T>
@@ -452,12 +458,24 @@ unsigned int AVLTree<T>::size() const {
 }
 
 template<class T>
-void AVLTree<T>::map(MappingFunction *function) {
+void AVLTree<T>::map(MapFunction *function) {
     AVLTreeIterator<T> iterator(this);
     while (iterator.hasNext()) {
         AVLNode<T> *next = iterator.next();
         function->apply(next);
     }
 }
+
+template<class T>
+int AVLTree<T>::reduce(ReduceFunction * function, int initialState) const {
+    AVLTreeIterator<T> iterator(this);
+    int state = initialState;
+    while (iterator.hasNext()) {
+        AVLNode<T> *next = iterator.next();
+        state = function->reduce(next, state);
+    }
+    return state;
+}
+
 
 #endif
