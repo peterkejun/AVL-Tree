@@ -15,7 +15,7 @@ static intmax_t convert( const char * str ) {
 }
 
 int main(int argc, char *argv[]) {
-    int testSize = 100000;
+    long long int testSize = 100000;
     //0=>insert, 1=>delete, 2=>find
     int mode = 0;
     if(argc > 2){
@@ -24,27 +24,30 @@ int main(int argc, char *argv[]) {
     }
 
     vector<int> testVector;
-    cout << "GENERATING " << testSize << "ELEMENTS" << endl;
-    for(int i = 0; i < testSize; i++){
+    cout << "GENERATING " << testSize << " ELEMENTS" << endl;
+    for(long long int i = 0; i < testSize; i++){
         testVector.push_back(rand() % testSize);
     }
 
     AVLTree<int> tree;
     //Interate through the tests
     cout << "INSERTING " << testSize << " ELEMENTS" << endl;
-    for(int i = 0; i < testSize; i++){
+    for(long long int i = 0; i < testSize; i++){
         tree.insert(testVector.at(i));
-        if(mode == 2 && rand() % 10 == 0){
-            int element = testVector.at(i);
-            cout << "FINDING " << element << endl;
-            tree.find(element);
-        }
     }
 
     if(mode == 1){
         cout << "DELETING " << testSize << " ELEMENTS" << endl;
-        for(int i = 0; i < testSize; i++){
+        for(long long int i = 0; i < testSize; i++){
             tree.delete_(testVector.at(i));
+        }
+    }
+
+    if(mode == 2){
+        cout << "FINDING" << endl;
+        for(long long int i = 0; i < testSize; i++){
+            int element = testVector.at(i);
+            tree.find(element);
         }
     }
     
