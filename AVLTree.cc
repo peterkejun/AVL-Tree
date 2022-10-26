@@ -11,6 +11,9 @@ AVLTree::~AVLTree() {
 }
 
 void AVLTree::recursiveDeallocate(AVLNode * node) {
+    if (node == nullptr) {
+        return;
+    }
     recursiveDeallocate(node->getLeft());
     recursiveDeallocate(node->getRight());
     delete node;
@@ -32,19 +35,21 @@ int AVLTree::heightDifference(AVLNode * node) const {
 
 AVLNode * AVLTree::balance(AVLNode * node) {
     int heightDifference = this->heightDifference(node);
+    // cout << "balancing " << node->getData() << " " << heightDifference << endl;
     if (heightDifference < -1) {
         if (this->heightDifference(node->getRight()) <= 0) {
             node = rotateRR(node);
         } else {
             node = rotateRL(node);
         }
-    } else if (heightDifference > 0) {
+    } else if (heightDifference > 1) {
         if (this->heightDifference(node->getLeft()) <= 0) {
             node = rotateLR(node);
         } else {
             node = rotateLL(node);
         }
     }
+    // recursivePrint(node, 0);
     return node;
 }
 
@@ -90,17 +95,21 @@ AVLNode * AVLTree::find(int data) const {
     return recursiveFind(root, data);
 }
 
-void AVLTree::printTree(int space) {
-    if (root == nullptr)
+void AVLTree::recursivePrint(AVLNode *node, int space) const {
+    if (node == nullptr)
         return;
 
     space += 10;
-    printTree(root->getRight(), space);
+    recursivePrint(node->getRight(), space);
     cout << endl;
     for (int i = 10; i < space; i++)
         cout << " ";
-    cout << root->getData() << "\n";
-    printTree(root->getLeft(), space);
+    cout << node->getData() << "\n";
+    recursivePrint(node->getLeft(), space);
+}
+
+void AVLTree::print() const {
+    recursivePrint(root, 0);
 }
 
 AVLNode *AVLTree::recursiveMinimum(AVLNode * node) const {
@@ -142,23 +151,37 @@ AVLNode *AVLTree::recursiveDelete(AVLNode *node, int data) {
     return nullptr;
 }
 
-void AVLTree::delete_(int) {
-
+void AVLTree::delete_(int data) {
+    root = recursiveDelete(root, data);
 }
 
-AVLNode * AVLTree::recursiveInsert(AVLNode* node, int data){
-    if (node == nullptr) {
-      node = new AVLNode(data, nullptr, nullptr);
-   } else if (data < node->getData()) {
-      node->setLeft(recursiveInsert(node->getLeft(), data));
-      node = balance(node);
-   } else if (data >= node->getData()) {
-      node->setRight(recursiveInsert(node->getRight(), data));
-      node = balance(node);
+AVLNode* AVLTree::recursiveInsert(AVLNode* node, int data){
+    if (root == nullptr) {
+        root = new AVLNode(data, nullptr, nullptr);
+        return root;
+    } else if (data < node->getData()) {
+        if (node->getLeft() == nullptr) {
+            AVLNode * newNode = new AVLNode(data, nullptr, nullptr);
+            node->setLeft(newNode);
+            node = balance(node);
+            return newNode;
+        } else {
+            return recursiveInsert(node->getLeft(), data);
+        }
+   } else {
+        if (node->getRight() == nullptr) {
+            AVLNode * newNode = new AVLNode(data, nullptr, nullptr);
+            node->setRight(newNode);
+            // recursivePrint(node, 0);
+        } else {
+            node->setRight(recursiveInsert(node->getRight(), data));
+        }
+        // cout << "currently at " << node->getData() << endl;
+        node = balance(node);
+        return node;
    } 
-   return node;
 }
 
-void AVLTree::insert(AVLNode* node, int data){
-    recursiveInsert(node, data);
+void AVLTree::insert(int data){
+    root = recursiveInsert(root, data);
 }

@@ -7,6 +7,8 @@ AVLNode::AVLNode(int data, AVLNode*left, AVLNode*right){
     this->right = right;
 }
 
+AVLNode::~AVLNode() {}
+
 int AVLNode::getData() const{
     return this->data;
 }
