@@ -24,7 +24,9 @@ public:
 };
 
 template<class T>
-AVLTreeIterator<T>::AVLTreeIterator(AVLTree<T> *tree): tree(tree) {}
+AVLTreeIterator<T>::AVLTreeIterator(AVLTree<T> *tree): tree(tree) {
+    left(tree->getRoot());
+}
 
 template<class T>
 AVLNode<T> *AVLTreeIterator<T>::next() const {
