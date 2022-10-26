@@ -46,7 +46,7 @@ public:
 
     class ReduceFunction {
     public: 
-        virtual int reduce(AVLNode<T> *, int) const
+        virtual int reduce(AVLNode<T> *, int) const;
     };
 
     AVLTree();
@@ -69,7 +69,7 @@ public:
     AVLNode<T> *popMin();
     unsigned int count(T) const;
     vector<AVLNode<T> *> filter(Predicate *) const;
-    unsigned int size() const;
+    unsigned int getSize() const;
     const AVLNode<T> *getRoot() const;
     void map(MapFunction *);
     int reduce(ReduceFunction *, int) const;
@@ -337,13 +337,13 @@ AVLTree<T> *AVLTree<T>::split(T data) {
     if (parent->getLeft() != nullptr && parent->getLeft()->getData() == data) {
         AVLTree<T> *tree = new AVLTree<T>(parent->getLeft());
         parent->setLeft(nullptr);
-        size -= tree->size();
+        size -= tree->getSize();
         return tree;
     } 
     if (parent->getRight() != nullptr && parent->getRight()->getData() == data) {
         AVLTree<T> *tree = new AVLTree<T>(parent->getRight());
         parent->setRight(nullptr);
-        size -= tree->size();
+        size -= tree->getSize();
         return tree;
     }
 }
@@ -388,7 +388,7 @@ void AVLTree<T>::join(AVLTree<T> *other) {
         AVLNode<T> *next = iterator.next();
         insert(next->getData());
     }
-    size += other->size();
+    size += other->getSize();
 }
 
 template<class T>
@@ -453,7 +453,7 @@ const AVLNode<T> *AVLTree<T>::getRoot() const {
 }
 
 template<class T>
-unsigned int AVLTree<T>::size() const {
+unsigned int AVLTree<T>::getSize() const {
     return size;
 }
 
