@@ -12,7 +12,6 @@ int main(int argc, char *argv[]) {
     tree.insert("4");
     tree.insert("5");
     tree.insert("6");
-    // tree.delete_(5);
     tree.delete_("4");
     tree.print();
     // cout << tree.find(1) << endl;

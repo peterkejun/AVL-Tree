@@ -73,6 +73,7 @@ public:
     const AVLNode<T> *getRoot() const;
     void map(MapFunction *);
     int reduce(ReduceFunction *, int) const;
+    AVLTreeIterator<T> iterator() const;
 };
 
 template<class T>
@@ -475,6 +476,12 @@ int AVLTree<T>::reduce(ReduceFunction * function, int initialState) const {
         state = function->reduce(next, state);
     }
     return state;
+}
+
+template<class T>
+AVLTreeIterator<T> AVLTree<T>::iterator() const {
+    AVLTreeIterator<T> iterator(this);
+    return iterator;
 }
 
 
