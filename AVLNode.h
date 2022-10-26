@@ -8,6 +8,7 @@ private:
     AVLNode * left;
     AVLNode * right;
 public:
+    enum Comparison { LESS, GREATER, EQUAL };
     AVLNode(int data, AVLNode*left, AVLNode*right);
     ~AVLNode();
     int getData() const;
@@ -16,5 +17,6 @@ public:
     void setData(int newData);
     void setLeft(AVLNode * left);
     void setRight(AVLNode * right);
+    Comparison compare(int) const;
 };
 #endif

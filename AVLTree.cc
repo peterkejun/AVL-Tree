@@ -80,7 +80,7 @@ AVLNode *AVLTree::rotateRL(AVLNode * parent){
 }
 
 AVLNode * AVLTree::recursiveFind(AVLNode *node, int data) const {
-    if (node->getData() == data) {
+    if (node->compare(data) == AVLNode::EQUAL) {
         return node;
     }
     AVLNode *leftFind = recursiveFind(node->getLeft(), data);
@@ -125,9 +125,9 @@ AVLNode *AVLTree::recursiveMinimum(AVLNode * node) const {
 AVLNode *AVLTree::recursiveDelete(AVLNode *node, int data) {
     if (node == nullptr) {
         return nullptr;
-    } else if (node->getData() < data) {
+    } else if (node->compare(data) == AVLNode::LESS) {
         node->setRight(recursiveDelete(node->getRight(), data));
-    } else if (node->getData() > data) {
+    } else if (node->compare(data) == AVLNode::GREATER) {
         node->setLeft(recursiveDelete(node->getLeft(), data));
     } else {
         if (node->getLeft() != nullptr && node->getRight() != nullptr) {
@@ -159,7 +159,7 @@ AVLNode* AVLTree::recursiveInsert(AVLNode* node, int data){
     if (root == nullptr) {
         root = new AVLNode(data, nullptr, nullptr);
         return root;
-    } else if (data < node->getData()) {
+    } else if (node->compare(data) == AVLNode::GREATER) {
         if (node->getLeft() == nullptr) {
             AVLNode * newNode = new AVLNode(data, nullptr, nullptr);
             node->setLeft(newNode);
