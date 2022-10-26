@@ -19,12 +19,13 @@ private:
     AVLNode *recursiveFind(AVLNode *, int) const;
     AVLNode *recursiveDelete(AVLNode *, int);
     AVLNode *recursiveMinimum(AVLNode *) const;
+    void recursivePrint(AVLNode *, int) const;
 public:
     AVLTree();
     ~AVLTree();
 
-    void insert(AVLNode*, int);
+    void insert(int);
     void delete_(int);
     AVLNode * find(int) const;
-    void printTree(int);
+    void print() const;
 };
