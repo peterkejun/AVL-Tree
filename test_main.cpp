@@ -32,6 +32,36 @@ struct summarize_fstatistics_t {
   }
 };
 
+unsigned int ipow(unsigned int b, unsigned int p) {
+  unsigned int result = 1;
+  unsigned int pos = 1;
+  while(pos) {
+    if(pos & p) {
+      result *= b;
+    }
+    pos <<= 1;
+    b *= b;
+  }
+  return result;
+}
+
+struct rhash_t {
+  unsigned int value = 0;
+  unsigned int count = 0;
+};
+
+rhash_t operator + (const rhash_t& lhs, const rhash_t& rhs) {
+  return rhash_t{lhs.value * ipow(3, rhs.count) + rhs.value, lhs.count + rhs.count};
+}
+
+struct to_rhash_t {
+  rhash_t operator() (const char& v) const {
+    return rhash_t{v, 1};
+  }
+};
+
+
+
 int main() {
   // c++ version
   std::cout << __cplusplus << std::endl;
@@ -59,7 +89,7 @@ int main() {
       node, 1, avl::identity<int>(), std::plus<int>(),
       std::allocator<avl::avl_node<int, int, int>>()));
   std::cout << avl::avl_node_size(node) << " (expected 2)" << std::endl;
-  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 2)" << std::endl;
   // test some removal ordered
   // (100)
   node = std::get<0>(avl::avl_node_remove_ordered(
@@ -91,19 +121,19 @@ int main() {
       ));
   std::cout << avl::avl_node_get_at_index(node, 0) << " (expected 350)" << std::endl;
   std::cout << avl::avl_node_size(node) << " (expected 1)" << std::endl;
-  std::cout << avl::avl_node_depth(node) << " (expected 1)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 1)" << std::endl;
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 450, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
-  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 2)" << std::endl;
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 550, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
-  std::cout << avl::avl_node_depth(node) << " (expected 2)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 2)" << std::endl;
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 650, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
-  std::cout << avl::avl_node_depth(node) << " (expected 3)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 3)" << std::endl;
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 660, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
@@ -113,11 +143,26 @@ int main() {
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 680, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
-  std::cout << avl::avl_node_depth(node) << " (expected 3)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 3)" << std::endl;
   node = std::get<0>(avl::avl_node_insert_ordered(
       node, 690, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
-  std::cout << avl::avl_node_depth(node) << " (expected 4)" << std::endl;
+  std::cout << int(avl::avl_node_depth(node)) << " (expected 4)" << std::endl;
+  // test multiset usage
+  avl::avl_node<std::pair<int, int>, int, avl::monostate>* msroot = nullptr;
+  for(int i = 2; i < 10000; ++i) {
+    int j = i;
+    while(j > 1) {
+      msroot = std::get<0>(avl::avl_node_insert_ordered(
+        msroot, std::make_pair(j, 1), std::less<std::pair<int, int>>(),
+        avl::merge_count<int, int>(), avl::monostate(), std::plus<avl::monostate>(), std::allocator<
+          avl::avl_node<std::pair<int, int>, int, avl::monostate>>()));
+      if(j&1) {j = 3*j+1;} else {j >>= 1;}
+    }
+  }
+  std::cout << avl::avl_node_size(msroot) << " (expected 21663)" << std::endl;
+  std::cout << avl::avl_node_get_at_index(msroot, 0).second << " (expected 9998)" << std::endl;
+  std::cout << avl::avl_node_get_at_index(msroot, 21).second << " (expected 4483)" << std::endl;
   // test making a tree
   avl::avl_tree<int> tree;
   std::cout << tree.size() << " (expected 0)" << std::endl;
@@ -138,7 +183,7 @@ int main() {
   std::cout << tree2.size() << " (expected 6)" << std::endl;
   std::cout << tree2.get_item(4) << " (expected 55)" << std::endl;
   std::cout << tree2.get_item(5) << " (expected 66)" << std::endl;
-  // test advanced tree usage
+  // test advanced tree usage: range queries
   avl::avl_tree<double, std::greater<double>, std::size_t, avl::no_merge<double>,
     to_fstatistics_t, fstatistics_t, std::plus<fstatistics_t>, summarize_fstatistics_t>
     stat_tree;
@@ -154,4 +199,16 @@ int main() {
   std::cout << stat_tree.get_range(98765, 99991) << " (expected -42.50917060359632, 0.010150295928113938, 42.767882804731585)" << std::endl;
   std::cout << stat_tree.get_range(123, 4567) << " (expected -116.54707776435288, 0.007742263529214008, 116.58825642773643)" << std::endl;
   std::cout << stat_tree.get_range(1, 11) << " (expected -4.058330490013714, 0.05384331878076476, 4.0828152807251294)" << std::endl;
+  // test advanced tree usage: string operations
+  avl::avl_tree<char, std::less<char>, std::size_t, avl::no_merge<char>, to_rhash_t> tstr;
+  tstr.insert(0, 't');
+  tstr.insert(1, 'e');
+  tstr.insert(2, 's');
+  tstr.insert(3, 't');
+  tstr.insert(4, '?');
+  std::cout << tstr.get_range(0, tstr.size()).value << " (expected 13569)" << std::endl;
+  for(int i = 0; i < 13; ++i) {
+    tstr.append(tstr);
+  }
+  std::cout << tstr.get_range(0, tstr.size()).value << " (expected 1641955328)" << std::endl;
 }

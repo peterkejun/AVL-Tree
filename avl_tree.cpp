@@ -173,7 +173,7 @@ struct merge_count {
 template <typename T, typename C>
 const bool merge_count<T, C>::operator()(std::pair<T, C> &to,
                                          const std::pair<T, C> &from) const {
-  if (to != from) return false;
+  if (to.first != from.first) return false;
   to.second += from.second;
   return true;
 }
@@ -188,7 +188,7 @@ template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
 _Size avl_node_size(avl_node<_Element, _Size, _Range_Type_Intermediate> *node);
 
 template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
-_Size avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node);
+unsigned char avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node);
 
 template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2>
 const _Element_2&
@@ -347,7 +347,7 @@ class avl_node {
 
   template <typename _Element_2, typename _Size_2,
             typename _Range_Type_Intermediate_2>
-  friend _Size_2 avl::avl_node_depth(
+  friend unsigned char avl::avl_node_depth(
       avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *);
 
   template <typename _Element_2, typename _Size_2, typename _Range_Type_Intermediate_2>
@@ -444,6 +444,10 @@ class avl_node {
   template <typename _Range_Preprocess, typename _Range_Combine>
   avl_node *rebalance_left_heavy(const _Range_Preprocess &_rpre,
                                  const _Range_Combine &_rcomb);
+  template <typename _Range_Preprocess, typename _Range_Combine>
+  std::pair<avl_node*, bool> join(avl_node* lhs, avl_node* rhs,
+    const _Range_Preprocess &_rpre,
+    const _Range_Combine &_rcomb);
 };
 
 //! Get the size of the subtree.
@@ -463,7 +467,7 @@ _Size avl_node_size(avl_node<_Element, _Size, _Range_Type_Intermediate> *node) {
 // uses the convention that empty tree is 0 and single node is 1
 // O(logN) time
 template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
-_Size avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node) {
+unsigned char avl_node_depth(avl_node<_Element, _Size, _Range_Type_Intermediate> *node) {
  if (node == nullptr) return 0;
  return 1 + (node->balance <= 0 ? avl_node_depth(node->left) : avl_node_depth(node->right));
 }
@@ -605,6 +609,50 @@ avl_node<_Element, _Size, _Range_Type_Intermediate>
   return this->rotate_right(_rpre, _rcomb);
 }
 
+template <typename _Element, typename _Size, typename _Range_Type_Intermediate>
+template <typename _Range_Preprocess, typename _Range_Combine>
+std::pair<avl_node<_Element, _Size, _Range_Type_Intermediate>*, bool>
+avl_node<_Element, _Size, _Range_Type_Intermediate>::join(
+  avl_node<_Element, _Size, _Range_Type_Intermediate>* lhs,
+  avl_node<_Element, _Size, _Range_Type_Intermediate>* rhs,
+  const _Range_Preprocess &_rpre,
+  const _Range_Combine &_rcomb) {
+  const auto ld = avl_node_depth(lhs);
+  const auto rd = avl_node_depth(rhs);
+  if(ld > rd + 1) {
+    auto partial = join(lhs->right, rhs, _rpre, _rcomb);
+    lhs->right = partial.first;
+    bool taller = partial.second;
+    lhs->balance += taller;
+    if(!taller || lhs->balance == 0) {
+      lhs->update(_rpre, _rcomb);
+      return std::make_pair(lhs, false);
+    } else if(lhs->balance == 1) {
+      lhs->update(_rpre, _rcomb);
+      return std::make_pair(lhs, true);
+    }
+    return std::make_pair(lhs->rebalance_right_heavy(_rpre, _rcomb), false);
+  } else if(rd > ld + 1) {
+    auto partial = join(lhs, rhs->left, _rpre, _rcomb);
+    rhs->left = partial.first;
+    bool taller = partial.second;
+    rhs->balance -= taller;
+    if(!taller || rhs->balance == 0) {
+      rhs->update(_rpre, _rcomb);
+      return std::make_pair(rhs, false);
+    } else if(rhs->balance == -1) {
+      rhs->update(_rpre, _rcomb);
+      return std::make_pair(rhs, true);
+    }
+    return std::make_pair(rhs->rebalance_left_heavy(_rpre, _rcomb), false);
+  } else {
+    left = lhs;
+    right = rhs;
+    update(_rpre, _rcomb);
+    return std::make_pair(this, true);
+  }
+}
+
 //! Get the element at a specific index in the subtree.
 /*!
  * Get (a const reference to) the element at a specific index.
@@ -681,7 +729,7 @@ avl_node_insert_at_index(
   }
   // attempt merge
   if (_merge(node->value, value)) {
-    return std::make_pair(node, true);
+    return std::make_pair(node, false);
   }
   // do regular insert
   _Size left_size = avl_node_size(node->left);
@@ -848,7 +896,7 @@ avl_node_remove_at_index(
       return std::make_tuple(child, true, result);
     }
     auto partial =
-        avl_node_remove_at_index(node->right, 0, _rpre, _rcomb, _alloc);
+        avl_node_remove_at_index(node->right, _Size(0), _rpre, _rcomb, _alloc);
     node->right = std::get<0>(partial);
     bool shorter = std::get<1>(partial);
     node->value = std::get<2>(partial);
@@ -1206,6 +1254,29 @@ avl_node_range_get(
   }
 }
 
+template <typename _Element,
+          typename _Size,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Alloc>
+avl_node<_Element, _Size, _Range_Type_Intermediate> * avl_node_join2(
+  avl_node<_Element, _Size, _Range_Type_Intermediate> * lhs,
+  avl_node<_Element, _Size, _Range_Type_Intermediate> * rhs,
+  const _Range_Preprocess& _rpre,
+  const _Range_Combine& _rcomb,
+  _Alloc& _alloc
+) {
+  if(lhs == nullptr) {return rhs;}
+  if(rhs == nullptr) {return lhs;}
+  auto remove_result = avl_node_remove_at_index(rhs, _Size(0), _rpre, _rcomb, _alloc);
+  rhs = std::get<0>(remove_result);
+  const _Element& mid_value = std::get<2>(remove_result);
+  avl_node<_Element, _Size, _Range_Type_Intermediate> * join_node = _alloc.allocate(1);
+  _alloc.construct(join_node, mid_value, _rpre(mid_value));
+  return std::get<0>(join_node->join(lhs, rhs, _rpre, _rcomb));
+}
+
 // the avl tree class
 
 //! The AVL tree class, the most basic and extensible data structure in the public API.
@@ -1292,6 +1363,12 @@ class avl_tree {
   void insert(std::size_t, _Element);
   _Element remove(std::size_t);
   void replace(std::size_t, _Element);
+  void append_destroy(avl_tree<_Element, _Element_Compare, _Size, _Merge,
+    _Range_Preprocess, _Range_Type_Intermediate,
+    _Range_Combine, _Range_Postprocess, _Alloc>&);
+  void append(const avl_tree<_Element, _Element_Compare, _Size, _Merge,
+    _Range_Preprocess, _Range_Type_Intermediate,
+    _Range_Combine, _Range_Postprocess, _Alloc>&);
 };
 
 template <typename _Element, typename _Element_Compare,
@@ -1430,6 +1507,42 @@ avl_tree<_Element, _Element_Compare, _Size, _Merge,
   ::replace(std::size_t index, _Element element) {
     auto replace_result = avl_node_replace_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
     root = std::get<0>(replace_result);
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+void
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::append_destroy(avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>& rhs) {
+    root = avl_node_join2(root, rhs.root, _rpre, _rcomb, _alloc);
+    rhs.root = nullptr; // mark destroyed
+  }
+
+template <typename _Element, typename _Element_Compare,
+          typename _Size, typename _Merge,
+          typename _Range_Preprocess,
+          typename _Range_Type_Intermediate,
+          typename _Range_Combine,
+          typename _Range_Postprocess,
+          typename _Alloc>
+void
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>
+  ::append(const avl_tree<_Element, _Element_Compare, _Size, _Merge,
+  _Range_Preprocess, _Range_Type_Intermediate,
+  _Range_Combine, _Range_Postprocess, _Alloc>& rhs) {
+    auto rhs_copy = rhs;
+    append_destroy(rhs_copy);
   }
 
 }  // namespace avl
