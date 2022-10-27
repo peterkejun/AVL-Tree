@@ -1441,7 +1441,7 @@ _Element
 avl_tree<_Element, _Element_Compare, _Size, _Merge,
   _Range_Preprocess, _Range_Type_Intermediate,
   _Range_Combine, _Range_Postprocess, _Alloc>
-  ::get_item(std::size_t index) {
+  ::get_item(_Size index) {
     return avl_node_get_at_index(root, index);
   }
 
@@ -1456,7 +1456,7 @@ avl_invoke_result_t(_Range_Postprocess, _Range_Type_Intermediate)
 avl_tree<_Element, _Element_Compare, _Size, _Merge,
   _Range_Preprocess, _Range_Type_Intermediate,
   _Range_Combine, _Range_Postprocess, _Alloc>
-  ::get_range(std::size_t start, std::size_t stop) {
+  ::get_range(_Size start, _Size stop) {
     return _rpost(avl_node_range_get(root, start, stop, _rpre, _rcomb));
   }
 
