@@ -211,4 +211,7 @@ int main() {
     tstr.append(tstr);
   }
   std::cout << tstr.get_range(0, tstr.size()).value << " (expected 1641955328)" << std::endl;
+  std::cout << tstr.get_range(0, 1000).value << " (expected 1153508880)" << std::endl;
+  std::cout << tstr.get_range(4, 1004).value << " (expected 1963624016)" << std::endl;
+  std::cout << tstr.get_range(3334, 4334).value << " (expected 1963624016)" << std::endl;
 }
