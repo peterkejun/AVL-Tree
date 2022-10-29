@@ -1357,12 +1357,12 @@ class avl_tree {
     _Range_Combine, _Range_Postprocess, _Alloc>&);
   ~avl_tree();
   std::size_t size();
-  _Element get_item(std::size_t);
+  _Element get_item(_Size);
   avl_invoke_result_t(_Range_Postprocess, _Range_Type_Intermediate) get_range(
-      std::size_t, std::size_t);
-  void insert(std::size_t, _Element);
-  _Element remove(std::size_t);
-  void replace(std::size_t, _Element);
+      _Size, _Size);
+  void insert(_Size, _Element);
+  _Element remove(_Size);
+  void replace(_Size, _Element);
   void append_destroy(avl_tree<_Element, _Element_Compare, _Size, _Merge,
     _Range_Preprocess, _Range_Type_Intermediate,
     _Range_Combine, _Range_Postprocess, _Alloc>&);
@@ -1471,7 +1471,7 @@ void
 avl_tree<_Element, _Element_Compare, _Size, _Merge,
   _Range_Preprocess, _Range_Type_Intermediate,
   _Range_Combine, _Range_Postprocess, _Alloc>
-  ::insert(std::size_t index, _Element element) {
+  ::insert(_Size index, _Element element) {
     auto insert_result = avl_node_insert_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
     root = std::get<0>(insert_result);
   }
@@ -1487,7 +1487,7 @@ _Element
 avl_tree<_Element, _Element_Compare, _Size, _Merge,
   _Range_Preprocess, _Range_Type_Intermediate,
   _Range_Combine, _Range_Postprocess, _Alloc>
-  ::remove(std::size_t index) {
+  ::remove(_Size index) {
     auto remove_result = avl_node_remove_at_index(root, index, _rpre, _rcomb, _alloc);
     root = std::get<0>(remove_result);
     return std::get<2>(remove_result);
@@ -1504,7 +1504,7 @@ void
 avl_tree<_Element, _Element_Compare, _Size, _Merge,
   _Range_Preprocess, _Range_Type_Intermediate,
   _Range_Combine, _Range_Postprocess, _Alloc>
-  ::replace(std::size_t index, _Element element) {
+  ::replace(_Size index, _Element element) {
     auto replace_result = avl_node_replace_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
     root = std::get<0>(replace_result);
   }
