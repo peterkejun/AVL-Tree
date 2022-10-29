@@ -1361,6 +1361,7 @@ class avl_tree {
   avl_invoke_result_t(_Range_Postprocess, _Range_Type_Intermediate) get_range(
       _Size, _Size);
   void insert(_Size, _Element);
+  _Size insert_ordered(_Element);
   _Element remove(_Size);
   void replace(_Size, _Element);
   void append_destroy(avl_tree<_Element, _Element_Compare, _Size, _Merge,
@@ -1475,6 +1476,23 @@ avl_tree<_Element, _Element_Compare, _Size, _Merge,
     auto insert_result = avl_node_insert_at_index(root, index, element, _merge, _rpre, _rcomb, _alloc);
     root = std::get<0>(insert_result);
   }
+
+template <typename _Element, typename _Element_Compare,
+        typename _Size, typename _Merge,
+        typename _Range_Preprocess,
+        typename _Range_Type_Intermediate,
+        typename _Range_Combine,
+        typename _Range_Postprocess,
+        typename _Alloc>
+_Size
+avl_tree<_Element, _Element_Compare, _Size, _Merge,
+_Range_Preprocess, _Range_Type_Intermediate,
+_Range_Combine, _Range_Postprocess, _Alloc>
+::insert_ordered(_Element element) {
+  auto insert_result = avl_node_insert_ordered(root, element, _less, _merge, _rpre, _rcomb, _alloc);
+  root = std::get<0>(insert_result);
+  return std::get<2>(insert_result);
+}
 
 template <typename _Element, typename _Element_Compare,
           typename _Size, typename _Merge,
