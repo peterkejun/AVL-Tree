@@ -83,6 +83,12 @@ int main() {
       node, 100, std::less<int>(), avl::no_merge<int>(), avl::identity<int>(),
       std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>()));
   std::cout << avl::avl_node_size(node) << " (expected 3)" << std::endl;
+  // test split at index 1
+
+  std::cout << "AVL Split Testing" << std::endl;
+  auto result = avl_node_split(node, 1, avl::no_merge<int>(), avl::identity<int>(), std::plus<int>(), std::allocator<avl::avl_node<int, int, int>>());
+  std::cout << avl::avl_node_size(std::get<0>(result)) << " (expected 1)" << std::endl;
+  std::cout << avl::avl_node_size(std::get<1>(result)) << " (expected 2)" << std::endl;
   // test some removal
   // (100 300)
   node = std::get<0>(avl::avl_node_remove_at_index(
