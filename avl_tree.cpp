@@ -402,7 +402,7 @@ class avl_node {
             typename _Range_Preprocess, typename _Range_Combine,
             typename _Alloc>
   friend std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *>
-  avl::avl_node_split(avl_node<_Element, _Size, _Range_Type_Intermediate> *node, bool rightChild, _Size actualIndex, _Size relativeIndex, const _Range_Preprocess &_rpre, const _Range_Combine &_rcomb);
+  avl::_avl_node_split(avl_node<_Element, _Size, _Range_Type_Intermediate> *node, bool rightChild, _Size actualIndex, _Size relativeIndex, const _Range_Preprocess &_rpre, const _Range_Combine &_rcomb);
 
   // avl_node_replace_at_index does not need friend
   // avl_node_replace_ordered does not need friend
