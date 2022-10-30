@@ -1322,7 +1322,6 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
   }
 
   _Size left_size = avl_node_size(node->left);
-  _Size right_size = avl_node_size(node->right);
 
   if (index == left_size){
     avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
@@ -1331,7 +1330,7 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
     _alloc.destroy(node);
     _alloc.deallocate(node, 1);
 
-    avl_node_insert_at_index(rhs, 0, value, _merge, _rpre, _rcomb, _alloc);
+    rhs = std::get<0>(avl_node_insert_at_index(rhs, _Size(0), value, _merge, _rpre, _rcomb, _alloc));
     return std::make_tuple(lhs, rhs); 
   }
   else if (index < left_size){
@@ -1339,30 +1338,30 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
     avl_node<_Element, _Size, _Range_Type_Intermediate> *ltree = std::get<0>(partial);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rtree = std::get<1>(partial);
     _Element value = node->value;
+
+    avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
+
     _alloc.destroy(node);
     _alloc.deallocate(node, 1);
 
-    avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
-    avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
+    rhs = std::get<0>(avl_node_insert_at_index(rhs, _Size(0), value, _merge, _rpre, _rcomb, _alloc));
 
-    avl_node_insert_at_index(rhs, 0, value, _merge, _rpre, _rcomb, _alloc);
-
-    return std::make_tuple(avl_node_join2(lhs, ltree, _rpre, _rcomb, _alloc), avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
+    return std::make_tuple(ltree, avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
   }
   else {
     auto partial = avl_node_split(node->right, index - (left_size + _Size(1)), _merge, _rpre, _rcomb, _alloc);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *ltree = std::get<0>(partial);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rtree = std::get<1>(partial);
     _Element value = node->value;
+
+    avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
+
     _alloc.destroy(node);
     _alloc.deallocate(node, 1);
 
-    avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
-    avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
+    lhs = std::get<0>(avl_node_insert_at_index(lhs, left_size, value, _merge, _rpre, _rcomb, _alloc));
 
-    avl_node_insert_at_index(lhs, left_size, value, _merge, _rpre, _rcomb, _alloc);
-
-    return std::make_tuple(avl_node_join2(ltree, lhs, _rpre, _rcomb, _alloc), avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
+    return std::make_tuple(avl_node_join2(ltree, lhs, _rpre, _rcomb, _alloc), rtree);
   }
 }
 
