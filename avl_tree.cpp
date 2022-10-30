@@ -254,6 +254,21 @@ avl_node_replace_ordered(
     const _Merge &, const _Range_Preprocess &,
     const _Range_Combine &, _Alloc);
 
+template <typename _Element_2, typename _Size_2,
+          typename _Range_Type_Intermediate_2, typename _Merge,
+          typename _Range_Preprocess, typename _Range_Combine,
+          typename _Alloc>
+std::tuple<avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *>
+_avl_node_split(
+  avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
+  bool, 
+  _Size_2,
+  _Size_2,
+  const _Merge &, 
+  const _Range_Preprocess &,
+  const _Range_Combine &,
+  _Alloc);
+
 // declaration for avl_node
 
 //! AVL tree node; for internal use.
@@ -401,12 +416,12 @@ class avl_node {
             typename _Range_Type_Intermediate_2, typename _Merge,
             typename _Range_Preprocess, typename _Range_Combine,
             typename _Alloc>
-  friend std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *>
+  friend std::tuple<avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *>
   avl::_avl_node_split(
-    avl_node<_Element, _Size, _Range_Type_Intermediate> *,
+    avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
     bool, 
-    _Size,
-    _Size,
+    _Size_2,
+    _Size_2,
     const _Merge &, 
     const _Range_Preprocess &,
     const _Range_Combine &,
@@ -1377,7 +1392,7 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
 ) {
   if (node == nullptr) { return std::make_tuple(node, nullptr); }
     
-  return _avl_node_split(node, true, -1, index, _merge, _rpre, _rcomb, _alloc);
+  return avl::_avl_node_split(node, true, -1, index, _merge, _rpre, _rcomb, _alloc);
 }
 
 // the avl tree class
