@@ -259,10 +259,8 @@ template <typename _Element_2, typename _Size_2,
           typename _Range_Preprocess, typename _Range_Combine,
           typename _Alloc>
 std::tuple<avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *>
-_avl_node_split(
+avl_node_split(
   avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
-  bool, 
-  _Size_2,
   _Size_2,
   const _Merge &, 
   const _Range_Preprocess &,
@@ -417,10 +415,8 @@ class avl_node {
             typename _Range_Preprocess, typename _Range_Combine,
             typename _Alloc>
   friend std::tuple<avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *>
-  avl::_avl_node_split(
+  avl::avl_node_split(
     avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
-    bool, 
-    _Size_2,
     _Size_2,
     const _Merge &, 
     const _Range_Preprocess &,
@@ -1310,11 +1306,9 @@ avl_node<_Element, _Size, _Range_Type_Intermediate> * avl_node_join2(
 template <typename _Element, typename _Size, typename _Range_Type_Intermediate,
           typename _Merge, typename _Range_Preprocess, typename _Range_Combine,
           typename _Alloc>
-std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *> _avl_node_split(
+std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *> avl_node_split(
   avl_node<_Element, _Size, _Range_Type_Intermediate> *node,
-  bool rightChild, 
-  _Size curIndex,
-  _Size relativeIndex,
+  _Size index,
   const _Merge &_merge, 
   const _Range_Preprocess &_rpre,
   const _Range_Combine &_rcomb,
@@ -1330,25 +1324,18 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
   _Size left_size = avl_node_size(node->left);
   _Size right_size = avl_node_size(node->right);
 
-  if (rightChild){
-    curIndex += left_size + 1;
-  }
-  else {
-    curIndex -= right_size + 1;
-  }
-
-  if (relativeIndex == left_size){
+  if (index == left_size){
     avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
     _Element value = node->value;
     _alloc.destroy(node);
     _alloc.deallocate(node, 1);
 
-    avl_node_insert_at_index(rhs, curIndex, value, _merge, _rpre, _rcomb, _alloc);
+    avl_node_insert_at_index(rhs, 0, value, _merge, _rpre, _rcomb, _alloc);
     return std::make_tuple(lhs, rhs); 
   }
-  else if (relativeIndex < left_size){
-    auto partial = _avl_node_split(node->left, false, curIndex, relativeIndex, _merge, _rpre, _rcomb, _alloc);
+  else if (index < left_size){
+    auto partial = avl_node_split(node->left, index, _merge, _rpre, _rcomb, _alloc);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *ltree = std::get<0>(partial);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rtree = std::get<1>(partial);
     _Element value = node->value;
@@ -1358,12 +1345,12 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
     avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
 
-    avl_node_insert_at_index(rhs, curIndex, value, _merge, _rpre, _rcomb, _alloc);
+    avl_node_insert_at_index(rhs, 0, value, _merge, _rpre, _rcomb, _alloc);
 
     return std::make_tuple(avl_node_join2(ltree, lhs, _rpre, _rcomb, _alloc), avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
   }
   else {
-    auto partial = _avl_node_split(node->right, true, curIndex, relativeIndex - (left_size + _Size(1)), _merge, _rpre, _rcomb, _alloc);
+    auto partial = avl_node_split(node->right, index - (left_size + _Size(1)), _merge, _rpre, _rcomb, _alloc);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *ltree = std::get<0>(partial);
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rtree = std::get<1>(partial);
     _Element value = node->value;
@@ -1373,26 +1360,10 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
     avl_node<_Element, _Size, _Range_Type_Intermediate> *lhs = node->left;
     avl_node<_Element, _Size, _Range_Type_Intermediate> *rhs = node->right;
 
-    avl_node_insert_at_index(lhs, curIndex, value, _merge, _rpre, _rcomb, _alloc);
+    avl_node_insert_at_index(lhs, 0, value, _merge, _rpre, _rcomb, _alloc);
 
     return std::make_tuple(avl_node_join2(ltree, lhs, _rpre, _rcomb, _alloc), avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
   }
-}
-
-template <typename _Element, typename _Size, typename _Range_Type_Intermediate,
-          typename _Merge, typename _Range_Preprocess, typename _Range_Combine,
-          typename _Alloc>
-std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *> avl_node_split(
-  avl_node<_Element, _Size, _Range_Type_Intermediate> *node,
-  _Size index,
-  const _Merge &_merge, 
-  const _Range_Preprocess &_rpre,
-  const _Range_Combine &_rcomb,
-  _Alloc _alloc
-) {
-  if (node == nullptr) { return std::make_tuple(node, nullptr); }
-    
-  return avl::_avl_node_split(node, true, -1, index, _merge, _rpre, _rcomb, _alloc);
 }
 
 // the avl tree class
