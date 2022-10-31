@@ -262,7 +262,7 @@ std::tuple<avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *, avl_node
 avl_node_split(
   avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
   _Size_2,
-  const _Merge &, 
+  const _Merge &,
   const _Range_Preprocess &,
   const _Range_Combine &,
   _Alloc);
@@ -418,7 +418,7 @@ class avl_node {
   avl::avl_node_split(
     avl_node<_Element_2, _Size_2, _Range_Type_Intermediate_2> *,
     _Size_2,
-    const _Merge &, 
+    const _Merge &,
     const _Range_Preprocess &,
     const _Range_Combine &,
     _Alloc);
@@ -1309,16 +1309,14 @@ template <typename _Element, typename _Size, typename _Range_Type_Intermediate,
 std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Element, _Size, _Range_Type_Intermediate> *> avl_node_split(
   avl_node<_Element, _Size, _Range_Type_Intermediate> *node,
   _Size index,
-  const _Merge &_merge, 
+  const _Merge &_merge,
   const _Range_Preprocess &_rpre,
   const _Range_Combine &_rcomb,
   _Alloc _alloc)
 {
   if (node == nullptr) [[unlikely]] {
-    throw std::out_of_range(
-      "AVL tree operation split at index tried to get from an empty "
-      "subtree. This happens when the index is outside of the range of "
-      "valid indices for this tree.");
+    // splitting an empty tree results in (empty, empty)
+    return std::make_tuple(nullptr, nullptr);
   }
 
   _Size left_size = avl_node_size(node->left);
@@ -1331,7 +1329,7 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
     _alloc.deallocate(node, 1);
 
     rhs = std::get<0>(avl_node_insert_at_index(rhs, _Size(0), value, _merge, _rpre, _rcomb, _alloc));
-    return std::make_tuple(lhs, rhs); 
+    return std::make_tuple(lhs, rhs);
   }
   else if (index < left_size){
     auto partial = avl_node_split(node->left, index, _merge, _rpre, _rcomb, _alloc);
@@ -1346,7 +1344,7 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
 
     rhs = std::get<0>(avl_node_insert_at_index(rhs, _Size(0), value, _merge, _rpre, _rcomb, _alloc));
 
-    return std::make_tuple(ltree, avl_node_join2(rhs, rtree, _rpre, _rcomb, _alloc));
+    return std::make_tuple(ltree, avl_node_join2(rtree, rhs, _rpre, _rcomb, _alloc));
   }
   else {
     auto partial = avl_node_split(node->right, index - (left_size + _Size(1)), _merge, _rpre, _rcomb, _alloc);
@@ -1361,7 +1359,7 @@ std::tuple<avl_node<_Element, _Size, _Range_Type_Intermediate> *, avl_node<_Elem
 
     lhs = std::get<0>(avl_node_insert_at_index(lhs, left_size, value, _merge, _rpre, _rcomb, _alloc));
 
-    return std::make_tuple(avl_node_join2(ltree, lhs, _rpre, _rcomb, _alloc), rtree);
+    return std::make_tuple(avl_node_join2(lhs, ltree, _rpre, _rcomb, _alloc), rtree);
   }
 }
 
